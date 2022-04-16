@@ -17,9 +17,6 @@
 			"me.sixteen_.sort.Sort"
 		]
 	},
-	"mixins": [
-		"sort.mixins.json"
-	],
 	"depends": {
 		"fabricloader": ">=0.13.3",
 		"fabric": "*",
