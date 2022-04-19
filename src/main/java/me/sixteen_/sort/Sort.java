@@ -1,8 +1,5 @@
 package me.sixteen_.sort;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -17,10 +14,12 @@ import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
 import net.minecraft.client.gui.screen.ingame.ShulkerBoxScreen;
 import net.minecraft.item.Item;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 
 public class Sort implements ClientModInitializer {
+
+	private MinecraftClient mc;
+	private ScreenHandler container;
 
 	@Override
 	public void onInitializeClient() {
@@ -28,8 +27,10 @@ public class Sort implements ClientModInitializer {
 			if (isContainer(screen)) {
 				ScreenKeyboardEvents.afterKeyPress(screen).register((containerScreen, key, scancode, modifiers) -> {
 					if (key == GLFW.GLFW_KEY_R) {
+						mc = client;
 						ScreenHandler container = ((ScreenHandlerProvider<?>) containerScreen).getScreenHandler();
-						sort(client, container);
+						this.container = container;
+						sort(container);
 					}
 				});
 			}
@@ -43,28 +44,55 @@ public class Sort implements ClientModInitializer {
 				screen instanceof HopperScreen;
 	}
 
-	private void sort(MinecraftClient mc, ScreenHandler container) {
-		List<Slot> slots = container.slots.stream() //
-				.filter(slot -> !mc.player.getInventory().equals(slot.inventory) && !slot.getStack().isEmpty()) //
-				.collect(Collectors.toList());
-		slots.sort((s1, s2) -> {
-			int id1 = Item.getRawId(s1.getStack().getItem());
-			int id2 = Item.getRawId(s2.getStack().getItem());
-			if (id1 < id2)
-				return -1;
-			if (id1 > id2)
-				return 1;
-			return 0;
-		});
-		for (int i = 0; i < slots.size(); i++) {
-			swap(mc, container.syncId, slots.get(i).id, i);
+	private void sort(ScreenHandler container) {
+		Integer[] slots = getContainerSlots(container);
+		quicksort(slots, 0, slots.length - 1);
+	}
+
+	private void quicksort(Integer[] slots, int left, int right) {
+		if (left >= right || left < 0) {
+			return;
+		}
+		int p = partition(slots, left, right);
+		quicksort(getContainerSlots(container), left, p - 1);
+		quicksort(getContainerSlots(container), p + 1, right);
+	}
+
+	private int partition(Integer[] slots, int left, int right) {
+		int pivot = slots[right];
+		int i = left - 1;
+
+		for (int j = left; j < right; j++) {
+			int id = slots[j];
+			if (id <= pivot) {
+				i++;
+				swap(i, j);
+			}
+		}
+		i++;
+		swap(i, right);
+		return i;
+	}
+
+	private Integer[] getContainerSlots(ScreenHandler container) {
+		return container.slots.stream() //
+				.filter(slot -> !mc.player.getInventory().equals(slot.inventory)) //
+				.map(slot -> {
+					int id = Item.getRawId(slot.getStack().getItem());
+					return id == 0 ? Integer.MAX_VALUE : id;
+				}) //
+				.toArray(Integer[]::new);
+	}
+
+	private void swap(int i1, int i2) {
+		if (i1 != i2) {
+			pickup(i1);
+			pickup(i2);
+			pickup(i1);
 		}
 	}
 
-	private void swap(MinecraftClient mc, int syncId, int i1, int i2) {
-		if (i1 != i2) {
-			mc.interactionManager.clickSlot(syncId, i1, 0, SlotActionType.PICKUP, mc.player);
-			mc.interactionManager.clickSlot(syncId, i2, 0, SlotActionType.PICKUP, mc.player);
-		}
+	private void pickup(int i) {
+		mc.interactionManager.clickSlot(container.syncId, i, 0, SlotActionType.PICKUP, mc.player);
 	}
 }
