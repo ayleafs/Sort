@@ -3,6 +3,7 @@ package me.sixteen_.sort;
 import org.lwjgl.glfw.GLFW;
 
 import me.sixteen_.sort.config.IConfig;
+import me.sixteen_.sort.order.IOrder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
@@ -20,6 +21,7 @@ import net.minecraft.screen.slot.SlotActionType;
 public class Sort implements ClientModInitializer {
 
 	private IConfig config;
+	private IOrder order;
 
 	private MinecraftClient mc;
 	private ScreenHandler container;
@@ -27,6 +29,10 @@ public class Sort implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		config = () -> GLFW.GLFW_KEY_R;
+		order = slot -> {
+			int id = Item.getRawId(slot.getStack().getItem());
+			return id == 0 ? Integer.MAX_VALUE : id;
+		};
 		ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
 			if (isContainer(screen)) {
 				ScreenKeyboardEvents.afterKeyPress(screen).register((containerScreen, key, scancode, modifiers) -> {
@@ -43,6 +49,10 @@ public class Sort implements ClientModInitializer {
 
 	public void setConfig(IConfig config) {
 		this.config = config;
+	}
+
+	public void setOrder(IOrder order) {
+		this.order = order;
 	}
 
 	private boolean isContainer(Screen screen) {
@@ -85,10 +95,7 @@ public class Sort implements ClientModInitializer {
 	private Integer[] getContainerSlots() {
 		return container.slots.stream()//
 				.filter(slot -> !mc.player.getInventory().equals(slot.inventory))//
-				.map(slot -> {
-					int id = Item.getRawId(slot.getStack().getItem());
-					return id == 0 ? Integer.MAX_VALUE : id;
-				})//
+				.map(order::getOrder)//
 				.toArray(Integer[]::new);
 	}
 
