@@ -29,10 +29,7 @@ public class Sort implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		config = () -> GLFW.GLFW_KEY_R;
-		order = slot -> {
-			int id = Item.getRawId(slot.getStack().getItem());
-			return id == 0 ? Integer.MAX_VALUE : id;
-		};
+		order = slot -> slot.getStack().isEmpty() ? Integer.MAX_VALUE : Item.getRawId(slot.getStack().getItem());
 		ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
 			if (isContainer(screen)) {
 				ScreenKeyboardEvents.afterKeyPress(screen).register((containerScreen, key, scancode, modifiers) -> {
