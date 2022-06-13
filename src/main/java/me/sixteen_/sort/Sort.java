@@ -2,6 +2,7 @@ package me.sixteen_.sort;
 
 import org.lwjgl.glfw.GLFW;
 
+import me.sixteen_.sort.config.IConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
@@ -18,23 +19,30 @@ import net.minecraft.screen.slot.SlotActionType;
 
 public class Sort implements ClientModInitializer {
 
+	private IConfig config;
+
 	private MinecraftClient mc;
 	private ScreenHandler container;
 
 	@Override
 	public void onInitializeClient() {
+		config = () -> GLFW.GLFW_KEY_R;
 		ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
 			if (isContainer(screen)) {
 				ScreenKeyboardEvents.afterKeyPress(screen).register((containerScreen, key, scancode, modifiers) -> {
-					if (key == GLFW.GLFW_KEY_R) {
+					if (key == config.getKeycode()) {
 						mc = client;
 						ScreenHandler container = ((ScreenHandlerProvider<?>) containerScreen).getScreenHandler();
 						this.container = container;
-						sort(container);
+						sort();
 					}
 				});
 			}
 		});
+	}
+
+	public void setConfig(IConfig config) {
+		this.config = config;
 	}
 
 	private boolean isContainer(Screen screen) {
@@ -44,8 +52,8 @@ public class Sort implements ClientModInitializer {
 				screen instanceof HopperScreen;
 	}
 
-	private void sort(ScreenHandler container) {
-		Integer[] slots = getContainerSlots(container);
+	private void sort() {
+		Integer[] slots = getContainerSlots();
 		quicksort(slots, 0, slots.length - 1);
 	}
 
@@ -54,8 +62,8 @@ public class Sort implements ClientModInitializer {
 			return;
 		}
 		int p = partition(slots, left, right);
-		quicksort(getContainerSlots(container), left, p - 1);
-		quicksort(getContainerSlots(container), p + 1, right);
+		quicksort(getContainerSlots(), left, p - 1);
+		quicksort(getContainerSlots(), p + 1, right);
 	}
 
 	private int partition(Integer[] slots, int left, int right) {
@@ -74,13 +82,13 @@ public class Sort implements ClientModInitializer {
 		return i;
 	}
 
-	private Integer[] getContainerSlots(ScreenHandler container) {
-		return container.slots.stream() //
-				.filter(slot -> !mc.player.getInventory().equals(slot.inventory)) //
+	private Integer[] getContainerSlots() {
+		return container.slots.stream()//
+				.filter(slot -> !mc.player.getInventory().equals(slot.inventory))//
 				.map(slot -> {
 					int id = Item.getRawId(slot.getStack().getItem());
 					return id == 0 ? Integer.MAX_VALUE : id;
-				}) //
+				})//
 				.toArray(Integer[]::new);
 	}
 
