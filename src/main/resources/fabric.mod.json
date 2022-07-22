@@ -5,22 +5,37 @@
 	"name": "Sort",
 	"description": "a minimalistic container sorter",
 	"authors": [
-		"16_"
+		"16_",
+		"ayleafs"
 	],
 	"contact": {
-		"sources": "https://github.com/16underscore"
+		"sources": "https://github.com/ayleafs/Sort"
 	},
 	"icon": "assets/sort/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [
 			"me.sixteen_.sort.Sort"
-		]
+		],
+		"modmenu": [ "me.sixteen_.sort.config.gui.ModMenuConfig" ]
 	},
 	"depends": {
 		"fabricloader": ">=0.14.6",
 		"fabric": "*",
 		"minecraft": "~1.19",
 		"java": ">=17"
+	},
+	"recommends": {
+		"modmenu": ">=3.0.0"
+	},
+	"custom": {
+		"modmenu": {
+			"parent": {
+				"id": "sort",
+				"name": "Sort",
+				"description": "a minimalistic container sorter",
+				"icon": "assets/sort/icon.png"
+			}
+		}
 	}
 }
