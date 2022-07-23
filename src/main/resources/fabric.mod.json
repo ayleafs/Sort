@@ -17,13 +17,14 @@
 		"client": [
 			"me.sixteen_.sort.Sort"
 		],
-		"modmenu": [ "me.sixteen_.sort.config.gui.ModMenuConfig" ]
+		"modmenu": [ "me.sixteen_.sort.config.ModMenuImpl" ]
 	},
 	"depends": {
 		"fabricloader": ">=0.14.6",
 		"fabric": "*",
 		"minecraft": "~1.19",
-		"java": ">=17"
+		"java": ">=17",
+		"cloth-config": "*"
 	},
 	"recommends": {
 		"modmenu": ">=3.0.0"

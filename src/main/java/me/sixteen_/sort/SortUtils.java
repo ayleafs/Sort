@@ -33,6 +33,8 @@ public class SortUtils {
             slotIndexes.put(slot, slot.getIndex());
         }
 
+        int c = 0;
+
         for (int i = 0; i < slots.size(); i++) {
             Slot slot = slots.get(i);
 
@@ -45,6 +47,7 @@ public class SortUtils {
             }
 
             swap(handler, from, i);
+            c++;
 
             // find the slot at i and update its index in the map
             int finalI = i;
@@ -57,6 +60,8 @@ public class SortUtils {
             // (the position that it was swapped to)
             slotIndexes.put(slotAtI, from);
         }
+
+        System.out.println("Swapped " + c + " items");
     }
 
     public static void swap(ScreenHandler handler, int slotA, int slotB) {
